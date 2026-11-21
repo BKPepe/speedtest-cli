@@ -11,6 +11,9 @@ import (
 )
 
 func main() {
+	// a spinner cut short by Ctrl+C would leave the cursor hidden
+	output.CleanupOnInterrupt()
+
 	// define cli options
 	app := &cli.App{
 		Name:     "librespeed-cli",

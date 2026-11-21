@@ -75,10 +75,17 @@ func doSpeedTest(c *cli.Context, servers []defs.Server, telemetryServer defs.Tel
 
 			// get ping and jitter value
 			var pb *spinner.Spinner
+			stopSpinner := func() {}
 			if !silent {
 				pb = spinner.New(spinner.CharSets[11], 100*time.Millisecond, spinner.WithWriterFile(os.Stderr))
 				pb.Prefix = "Pinging server...  "
 				pb.Start()
+				// an interrupted run has to stop the spinner too
+				forget := output.OnExit(pb.Stop)
+				stopSpinner = func() {
+					pb.Stop()
+					forget()
+				}
 			}
 
 			// skip ICMP if option given
@@ -94,6 +101,7 @@ func doSpeedTest(c *cli.Context, servers []defs.Server, telemetryServer defs.Tel
 
 			p, jitter, err := currentServer.ICMPPingAndJitter(pingCount, c.String(defs.OptionSource), network)
 			if err != nil {
+				stopSpinner()
 				output.WriteError("Failed to get ping and jitter: %s\n", err)
 				return err
 			}
@@ -104,7 +112,7 @@ func doSpeedTest(c *cli.Context, servers []defs.Server, telemetryServer defs.Tel
 				// print the result ourselves instead of via pb.FinalMSG: the
 				// spinner only prints it when it was actually running, which it
 				// isn't when stderr is not a terminal
-				pb.Stop()
+				stopSpinner()
 				output.WriteUI("Ping: %.2f ms\tJitter: %.2f ms\n", p, jitter)
 			}
 

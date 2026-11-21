@@ -447,6 +447,8 @@ func (s *Server) Download(silent bool, useBytes, useMebi bool, requests int, chu
 		}
 
 		pb.Start()
+		// an interrupted run has to stop the spinner too
+		defer output.OnExit(pb.Stop)()
 		// print the rate ourselves instead of via pb.FinalMSG: the spinner only
 		// prints it when it was actually running, which it isn't when stderr is
 		// not a terminal
@@ -596,6 +598,8 @@ func (s *Server) Upload(noPrealloc, silent, useBytes, useMebi bool, requests int
 		}
 
 		pb.Start()
+		// an interrupted run has to stop the spinner too
+		defer output.OnExit(pb.Stop)()
 		// print the rate ourselves instead of via pb.FinalMSG: the spinner only
 		// prints it when it was actually running, which it isn't when stderr is
 		// not a terminal

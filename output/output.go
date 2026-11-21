@@ -109,21 +109,24 @@ func (w *Writer) WriteError(format string, args ...interface{}) {
 
 // --- Fatal: stderr + exit ---
 
-// Fatal writes args to stderr with a trailing newline and exits with code 1.
+// Fatal writes args to stderr with a trailing newline and exits with code 1,
+// after undoing what OnExit registered.
 // Supports: Fatal(err), Fatal("message"), Fatal("msg", arg).
 func Fatal(args ...interface{}) { Default.Fatal(args...) }
 
 func (w *Writer) Fatal(args ...interface{}) {
+	Cleanup()
 	fmt.Fprint(w.ui, args...)
 	fmt.Fprintln(w.ui)
 	os.Exit(1)
 }
 
 // Fatalf writes a formatted message to stderr with a trailing newline
-// and exits with code 1.
+// and exits with code 1, after undoing what OnExit registered.
 func Fatalf(format string, args ...interface{}) { Default.Fatalf(format, args...) }
 
 func (w *Writer) Fatalf(format string, args ...interface{}) {
+	Cleanup()
 	fmt.Fprintf(w.ui, format, args...)
 	fmt.Fprintln(w.ui)
 	os.Exit(1)
